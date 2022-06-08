@@ -1,0 +1,105 @@
+;; Simple wallet smart contract
+
+(int, int, int, int, cell, cell) load_data() inline {
+    var ds = get_data().begin_parse();
+    return 
+        (ds~load_uint(256),  ;; ed25519 public key
+         ds~load_uint(8),    ;; is initialized
+         ds~load_uint(256),  ;; action id
+         ds~load_int(8),     ;; is paused
+         ds~load_dict(),     ;; whitelist
+         ds~load_dict()      ;; consumed actions
+        );
+}
+
+() save_data(int public_key, int is_initialized, int action_id, int is_paused, cell whitelist, cell consumed_actions) impure inline {
+    set_data(begin_cell()
+        .store_uint(public_key, 256)
+        .store_uint(is_initialized, 8)
+        .store_uint(action_id, 256)
+        .store_int(is_paused, 8)
+        .store_dict(whitelist)
+        .store_dict(consumed_actions)
+        .end_cell());
+}
+
+() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    if (in_msg_body.slice_empty?()) { ;; ignore empty messages
+        return ();
+    }
+
+    int op = in_msg_body~load_uint(32);
+
+    if (op == 0) { ;; setup contract
+        var (_, is_initialized, _, _, _, _) = load_data();
+        throw_if(34, is_initialized);
+
+        var public_key = in_msg_body~load_uint(256);
+        save_data(public_key, 1, 0, 0, new_dict(), new_dict());
+        return ();
+    }
+
+    if (op == 7) {  ;; whitelist
+        var (public_key, _, stored_action_id, stored_paused, whitelist, consumed_actions) = load_data();
+
+        throw_if(36, stored_paused);
+
+        cell msg_cell = in_msg_body~load_ref();
+        slice msg_slice = msg_cell.begin_parse();
+        var action_id = msg_slice~load_uint(32);
+        var c_addr = msg_slice~load_msg_addr();
+
+        cell signature_cell = in_msg_body~load_ref();
+        slice signature_slice = signature_cell.begin_parse();
+
+        var (consumed_action, existed) = consumed_actions.udict_get?(256, action_id);
+        throw_if(37, existed);
+        var new_consumed_actions = consumed_actions.udict_set(256, action_id, begin_cell().store_uint(1, 8).end_cell().begin_parse());
+        
+        throw_unless(35, check_signature(cell_hash(msg_cell), signature_slice, public_key));
+
+        var (dest_wc, contract_addr) = parse_std_addr(c_addr);
+        var new_whitelist = whitelist.udict_set(256, contract_addr, begin_cell().store_uint(1, 8).end_cell().begin_parse());
+
+        save_data(public_key, 1, stored_action_id, stored_paused, new_whitelist, new_consumed_actions);
+        return ();
+    }
+
+    throw(0xffff);
+}
+
+() recv_external(slice in_msg) impure {
+    ;; do nothing for external messages
+}
+
+;; Get methods
+
+int get_public_key() method_id {
+    var (public_key, _, _, _, _, _) = load_data();
+    return public_key;
+}
+
+int is_initialized() method_id {
+    var (_, is_initialized, _, _, _, _) = load_data();
+    return is_initialized;
+}
+
+int get_action_id() method_id {
+    var (_, _, action_id, _, _, _) = load_data();
+    return action_id;
+}
+
+int is_paused() method_id {
+    var (_, _, _, is_paused, _, _) = load_data();
+    return is_paused;
+}
+
+cell get_whitelist() method_id {
+    var (_, _, _, _, whitelist, _) = load_data();
+    return whitelist;
+}
+
+cell get_consumed_actions() method_id {
+    var (_, _, _, _, _, consumed_actions) = load_data();
+    return consumed_actions;
+}

@@ -1,0 +1,163 @@
+"Asm.fif" include
+// automatically generated from `/Users/rocalex/Library/Application Support/toncli/func-libs/stdlib.func` `/Volumes/DATA/SourceCode/xp-network/ton-whitelist/func/code.func` 
+PROGRAM{
+  DECLPROC load_data
+  DECLPROC save_data
+  DECLPROC recv_internal
+  DECLPROC recv_external
+  78748 DECLMETHOD get_public_key
+  94011 DECLMETHOD is_initialized
+  79437 DECLMETHOD get_action_id
+  95098 DECLMETHOD is_paused
+  82536 DECLMETHOD get_whitelist
+  113868 DECLMETHOD get_consumed_actions
+  load_data PROC:<{
+    // 
+    c4 PUSH	//  _1
+    CTOS	//  ds
+    256 LDU	//  _3 ds
+    8 LDU	//  _3 _6 ds
+    256 LDU	//  _3 _6 _9 ds
+    8 LDI	//  _3 _6 _9 _12 ds
+    LDDICT	//  _3 _6 _9 _12 _15 ds
+    LDDICT	//  _3 _6 _9 _12 _15 _30 _29
+    DROP	//  _3 _6 _9 _12 _15 _17
+  }>
+  save_data PROC:<{
+    //  public_key is_initialized action_id is_paused whitelist consumed_actions
+    s0 s5 XCHG
+    NEWC	//  consumed_actions is_initialized action_id is_paused whitelist public_key _6
+    256 STU	//  consumed_actions is_initialized action_id is_paused whitelist _8
+    s1 s4 XCHG	//  consumed_actions whitelist action_id is_paused is_initialized _8
+    8 STU	//  consumed_actions whitelist action_id is_paused _10
+    s1 s2 XCHG	//  consumed_actions whitelist is_paused action_id _10
+    256 STU	//  consumed_actions whitelist is_paused _12
+    8 STI	//  consumed_actions whitelist _14
+    STDICT	//  consumed_actions _15
+    STDICT	//  _16
+    ENDC	//  _17
+    c4 POP
+  }>
+  recv_internal PROC:<{
+    //  my_balance msg_value in_msg_full in_msg_body
+    3 1 BLKDROP2	//  in_msg_body
+    DUP	//  in_msg_body in_msg_body
+    SEMPTY	//  in_msg_body _4
+    IFJMP:<{	//  in_msg_body
+      DROP	// 
+    }>	//  in_msg_body
+    32 LDU	//  op in_msg_body
+    OVER	//  op in_msg_body op
+    0 EQINT	//  op in_msg_body _10
+    IFJMP:<{	//  op in_msg_body
+      NIP	//  in_msg_body
+      load_data INLINECALLDICT	//  in_msg_body _95 _96 _97 _98 _99 _100
+      s4 s5 XCHG
+      5 BLKDROP	//  in_msg_body is_initialized
+      34 THROWIF
+      256 LDU	//  _102 _101
+      DROP	//  public_key
+      1 PUSHINT	//  public_key _24=1
+      0 PUSHINT	//  public_key _24=1 _25=0
+      DUP	//  public_key _24=1 _25=0 _26=0
+      NEWDICT	//  public_key _24=1 _25=0 _26=0 _27
+      NEWDICT	//  public_key _24=1 _25=0 _26=0 _27 _28
+      save_data INLINECALLDICT
+    }>	//  op in_msg_body
+    SWAP	//  in_msg_body op
+    7 EQINT	//  in_msg_body _31
+    IFJMP:<{	//  in_msg_body
+      load_data INLINECALLDICT	//  in_msg_body _103 _104 _105 _106 _107 _108
+      s4 POP	//  in_msg_body public_key consumed_actions stored_action_id stored_paused whitelist
+      OVER	//  in_msg_body public_key consumed_actions stored_action_id stored_paused whitelist stored_paused
+      36 THROWIF
+      s0 s5 XCHG	//  whitelist public_key consumed_actions stored_action_id stored_paused in_msg_body
+      LDREF	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell in_msg_body
+      OVER	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell in_msg_body msg_cell
+      CTOS	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell in_msg_body msg_slice
+      32 LDU	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell in_msg_body action_id msg_slice
+      LDMSGADDR	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell in_msg_body action_id _114 _113
+      DROP	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell in_msg_body action_id c_addr
+      s0 s2 XCHG	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell c_addr action_id in_msg_body
+      LDREF	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell c_addr action_id _116 _115
+      DROP	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell c_addr action_id signature_cell
+      CTOS	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell c_addr action_id signature_slice
+      s1 s6 PUSH2
+      8 PUSHPOW2	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell c_addr action_id signature_slice action_id consumed_actions _60=256
+      DICTUGET
+      NULLSWAPIFNOT	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell c_addr action_id signature_slice _117 _118
+      NIP	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell c_addr action_id signature_slice existed
+      37 THROWIF
+      1 PUSHINT	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell c_addr action_id signature_slice _65=1
+      NEWC	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell c_addr action_id signature_slice _65=1 _66
+      8 STU	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell c_addr action_id signature_slice _68
+      ENDC	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell c_addr action_id signature_slice _69
+      CTOS	//  whitelist public_key consumed_actions stored_action_id stored_paused msg_cell c_addr action_id signature_slice _70
+      s0 s0 s7 XCHG3
+      8 PUSHPOW2	//  whitelist public_key signature_slice stored_action_id stored_paused msg_cell c_addr _70 action_id consumed_actions _71=256
+      DICTUSET	//  whitelist public_key signature_slice stored_action_id stored_paused msg_cell c_addr new_consumed_actions
+      s0 s2 XCHG	//  whitelist public_key signature_slice stored_action_id stored_paused new_consumed_actions c_addr msg_cell
+      HASHCU	//  whitelist public_key signature_slice stored_action_id stored_paused new_consumed_actions c_addr _74
+      s0 s5 s6 XC2PU	//  whitelist public_key c_addr stored_action_id stored_paused new_consumed_actions _74 signature_slice public_key
+      CHKSIGNU	//  whitelist public_key c_addr stored_action_id stored_paused new_consumed_actions _75
+      35 THROWIFNOT
+      s0 s3 XCHG	//  whitelist public_key new_consumed_actions stored_action_id stored_paused c_addr
+      REWRITESTDADDR	//  whitelist public_key new_consumed_actions stored_action_id stored_paused _119 _120
+      NIP	//  whitelist public_key new_consumed_actions stored_action_id stored_paused contract_addr
+      1 PUSHINT	//  whitelist public_key new_consumed_actions stored_action_id stored_paused contract_addr _81=1
+      NEWC	//  whitelist public_key new_consumed_actions stored_action_id stored_paused contract_addr _81=1 _82
+      8 STU	//  whitelist public_key new_consumed_actions stored_action_id stored_paused contract_addr _84
+      ENDC	//  whitelist public_key new_consumed_actions stored_action_id stored_paused contract_addr _85
+      CTOS	//  whitelist public_key new_consumed_actions stored_action_id stored_paused contract_addr _86
+      s0 s1 s6 XCHG3
+      8 PUSHPOW2	//  stored_paused public_key new_consumed_actions stored_action_id _86 contract_addr whitelist _87=256
+      DICTUSET	//  stored_paused public_key new_consumed_actions stored_action_id new_whitelist
+      s3 s4 XCHG
+      1 PUSHINT
+      s4 s1 s4 XCHG3
+      s0 s3 XCHG	//  public_key _89=1 stored_action_id stored_paused new_whitelist new_consumed_actions
+      save_data INLINECALLDICT
+    }>	//  in_msg_body
+    DROP	// 
+    16 PUSHPOW2DEC	//  _91=65535
+    THROWANY
+  }>
+  recv_external PROC:<{
+    //  in_msg
+    DROP	// 
+  }>
+  get_public_key PROC:<{
+    // 
+    load_data INLINECALLDICT	//  _7 _8 _9 _10 _11 _12
+    5 BLKDROP	//  public_key
+  }>
+  is_initialized PROC:<{
+    // 
+    load_data INLINECALLDICT	//  _7 _8 _9 _10 _11 _12
+    s4 s5 XCHG
+    5 BLKDROP	//  is_initialized
+  }>
+  get_action_id PROC:<{
+    // 
+    load_data INLINECALLDICT	//  _7 _8 _9 _10 _11 _12
+    s3 s5 XCHG
+    5 BLKDROP	//  action_id
+  }>
+  is_paused PROC:<{
+    // 
+    load_data INLINECALLDICT	//  _7 _8 _9 _10 _11 _12
+    s2 s5 XCHG
+    5 BLKDROP	//  is_paused
+  }>
+  get_whitelist PROC:<{
+    // 
+    load_data INLINECALLDICT	//  _7 _8 _9 _10 _11 _12
+    s1 s5 XCHG
+    5 BLKDROP	//  whitelist
+  }>
+  get_consumed_actions PROC:<{
+    // 
+    load_data INLINECALLDICT	//  _7 _8 _9 _10 _11 _12
+    5 1 BLKDROP2	//  consumed_actions
+  }>
+}END>c
